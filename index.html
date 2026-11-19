@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>學術文章分析｜Moon et al. (2026) 產品特徵相互依賴性</title>
+  <style>
+    :root {
+      --page: #ffffff;
+      --panel: #ffffff;
+      --soft: #f6f8f8;
+      --line: #e3e8e8;
+      --ink: #263238;
+      --muted: #718087;
+      --accent: #477b80; /* 可替換成你原本的主色 */
+      --accent-soft: #edf4f4;
+      --sidebar-width: 250px;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+      line-height: 1.7;
+    }
+
+    .layout { min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: var(--sidebar-width);
+      padding: 28px 18px;
+      overflow-y: auto;
+      background: #fbfcfc;
+      border-right: 1px solid var(--line);
+      z-index: 20;
+    }
+    .site-name {
+      margin: 0 8px 8px;
+      color: var(--accent);
+      font-size: 17px;
+      font-weight: 750;
+      letter-spacing: .02em;
+    }
+    .site-note {
+      margin: 0 8px 26px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .toc-label {
+      margin: 0 8px 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+    }
+    .toc { display: grid; gap: 5px; }
+    .toc .toc-link {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 2.6em 1fr;
+      align-items: start;
+      padding: 10px 12px;
+      color: #526168;
+      text-decoration: none;
+      font-size: 13px;
+      line-height: 1.45;
+      border-radius: 9px;
+      transition: background .18s ease, color .18s ease;
+    }
+    .toc-num { white-space: nowrap; }
+    .toc-text { min-width: 0; overflow-wrap: anywhere; }
+    .toc .toc-link:hover { background: var(--accent-soft); color: var(--accent); }
+    .toc .toc-link { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .toc .toc-link.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 750;
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    .main-content {
+      width: min(1180px, calc(100% - var(--sidebar-width)));
+      margin-left: var(--sidebar-width);
+      padding: 42px clamp(22px, 4vw, 58px) 80px;
+    }
+    .article-banner {
+      padding: clamp(24px, 4vw, 42px);
+      margin-bottom: 28px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      scroll-margin-top: 24px;
+    }
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .12em;
+    }
+    h1 {
+      margin: 0 0 16px;
+      font-size: clamp(25px, 3vw, 36px);
+      line-height: 1.35;
+      letter-spacing: -.02em;
+    }
+    .article-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .outline {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+    .outline strong { display: block; margin-bottom: 8px; font-size: 13px; }
+    .outline ol {
+      margin: 0;
+      padding-left: 20px;
+      color: #58666c;
+      font-size: 13px;
+    }
+    .outline ol ol {
+      margin: 4px 0 7px;
+      padding-left: 22px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .outline li { margin: 4px 0; }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      align-items: start;
+      grid-auto-rows: min-content;
+    }
+    /* 卡片高度由各自內容決定，不設定固定高度或內部捲軸。 */
+    .analysis-card { height: auto; }
+    .analysis-card {
+      min-width: 0;
+      padding: 23px 24px 26px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      scroll-margin-top: 24px;
+    }
+    .card-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 13px;
+      border-bottom: 1px solid var(--line);
+    }
+    .number {
+      flex: 0 0 34px;
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    h2 { margin: 2px 0 0; font-size: 17px; line-height: 1.4; }
+    h3 { margin: 20px 0 7px; font-size: 14px; color: var(--accent); }
+    p { margin: 8px 0; }
+    .placeholder { color: var(--muted); font-size: 13px; }
+    ul, ol { padding-left: 21px; }
+    li { margin: 5px 0; }
+    .note {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: var(--soft);
+      border-radius: 9px;
+      color: #526168;
+      font-size: 13px;
+    }
+
+
+    /* ===== REFERENCE 卡片 ===== */
+    .ref-card {
+      margin-top: 22px;
+      padding: 16px 18px 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
+      border-radius: 11px;
+    }
+    .ref-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .ref-label {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .12em;
+    }
+    .ref-label small {
+      margin-left: 8px;
+      padding: 2px 7px;
+      background: var(--accent-soft);
+      border-radius: 6px;
+      font-size: 11px;
+      letter-spacing: .04em;
+    }
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--accent);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background .18s ease, border-color .18s ease;
+    }
+    .copy-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+    .copy-btn.copied { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .ref-text {
+      margin: 0;
+      padding: 11px 14px 11px calc(14px + 2em);
+      text-indent: -2em;               /* APA 懸掛縮排 */
+      background: var(--soft);
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+      user-select: text;
+    }
+    .ref-text .todo { background: #fff3cd; padding: 0 3px; border-radius: 3px; }
+    .ref-hint { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+
+    /* ===== 00 Structure 表格 ===== */
+    .outline-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .outline-table th {
+      padding: 7px 10px;
+      text-align: left;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--line);
+    }
+    .outline-table td {
+      padding: 7px 10px;
+      vertical-align: top;
+      color: #58666c;
+      border-bottom: 1px solid #eef1f1;
+    }
+    .outline-table td:first-child { width: 36%; }
+    .outline-table tr.lv1 td:first-child { color: var(--ink); font-weight: 650; }
+    .outline-table tr.lv2 td:first-child { padding-left: 28px; }
+    .outline-table td:last-child { color: var(--accent); }
+    .table-scroll { overflow-x: auto; }
+
+    /* ===== 卡片內容 ===== */
+    .analysis-card.wide { grid-column: 1 / -1; }
+    .analysis-card p, .analysis-card li { font-size: 14.5px; }
+    .analysis-card .note { font-size: 13px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+    .two-col h3:first-child { margin-top: 0; }
+    .res-table {
+      width: 100%;
+      min-width: 780px;
+      border-collapse: collapse;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .res-table th {
+      padding: 10px 12px;
+      text-align: left;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 750;
+      border: 1px solid var(--line);
+    }
+    .res-table td {
+      padding: 10px 12px;
+      vertical-align: top;
+      border: 1px solid var(--line);
+    }
+    .res-table td:first-child { font-weight: 700; white-space: nowrap; }
+    .cell-list { margin: 0; padding: 0; list-style: none; }
+    .cell-list li { margin: 2px 0; font-size: 13px; }
+    .orange { color: #c2570c; font-weight: 600; }
+
+    @media (max-width: 900px) { .analysis-card, .article-banner { scroll-margin-top: 0; } }
+
+    .mobile-bar, .overlay { display: none; }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        width: min(290px, 86vw);
+        transform: translateX(-105%);
+        visibility: hidden;
+        transition: transform .22s ease, visibility 0s linear .22s;
+        box-shadow: none;
+      }
+      html { scroll-padding-top: 70px; }
+      body.menu-open .sidebar {
+        transform: translateX(0);
+        visibility: visible;
+        transition: transform .22s ease, visibility 0s;
+        box-shadow: 12px 0 35px rgba(25, 45, 50, .12);
+      }
+      .main-content {
+        width: 100%;
+        margin-left: 0;
+        padding: 76px 22px 56px;
+      }
+      .mobile-bar {
+        position: fixed;
+        inset: 0 0 auto 0;
+        z-index: 15;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px;
+        background: rgba(255,255,255,.94);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(10px);
+      }
+      .menu-button {
+        border: 1px solid var(--line);
+        background: white;
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 9px 13px;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .mobile-title { font-size: 13px; font-weight: 700; }
+      body.menu-open .overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 18;
+        background: rgba(20, 35, 40, .25);
+      }
+    }
+    @media (max-width: 680px) {
+      .analysis-grid { grid-template-columns: 1fr; }
+      .article-banner { padding: 23px 20px; }
+      .analysis-card { padding: 20px; }
+      .two-col { grid-template-columns: 1fr; }
+      .two-col > div + div h3:first-child { margin-top: 20px; }
+      .ref-head { align-items: flex-start; }
+      .outline-table td:first-child { width: auto; }
+    }
+
+    /* ===== 本篇新增樣式 ===== */
+    .subtitle { margin: -6px 0 16px; color: #526168; font-size: clamp(15px, 1.8vw, 18px); font-weight: 600; }
+    .authors { margin: 14px 0 0; padding-left: 20px; color: #58666c; font-size: 13px; }
+    .authors li { margin: 3px 0; }
+    .outline + .outline { margin-top: 22px; }
+    .outline-table { min-width: 720px; }
+    .outline-table td:last-child { color: #58666c; }
+    .outline-table td.fig { width: 15%; color: var(--accent); white-space: nowrap; }
+    .outline-table td.fig span { display: block; }
+    .jump {
+      display: inline; padding: 0; border: 0; background: none;
+      font: inherit; color: var(--accent); cursor: pointer;
+      text-decoration: underline dotted; text-underline-offset: 3px;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    }
+    .jump:hover { text-decoration-style: solid; }
+    .ext {
+      color: var(--accent); font-weight: 650; text-decoration: none; white-space: nowrap;
+      border-bottom: 1px solid transparent;
+    }
+    .ext:hover { border-bottom-color: var(--accent); }
+    .gray { color: #98a3a8; }
+    .gloss p { margin-top: 4px; }
+    .res-table td.fig-name { width: 18%; }
+    .res-table td.fig-link { width: 14%; white-space: nowrap; }
+    .res-table td.fig-link a { display: block; margin: 2px 0; }
+    .res-table td.fig-link .none { color: var(--muted); }
+    .res-table tr, h3[id], .outline-table tr { scroll-margin-top: 24px; }
+    .flash, tr.flash td { animation: flashbg 1.8s ease; }
+    @keyframes flashbg { 0%, 55% { background: #fff3cd; } 100% { background: transparent; } }
+    .obj-list li { margin: 10px 0; }
+    .obj-list li strong { display: block; }
+
+    /* ===== 簡報模式 ===== */
+    .mode-switch { position: fixed; top: 12px; right: 14px; z-index: 60; display: inline-flex; padding: 3px; background: #fff; border: 1px solid var(--line); border-radius: 999px; box-shadow: 0 2px 10px rgba(25,45,50,.08); }
+    .mode-switch button { border: 0; background: transparent; padding: 7px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 650; color: var(--muted); cursor: pointer; touch-action: manipulation; }
+    .mode-switch button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+    @media (max-width: 560px) { .mobile-title { display: none; } .mode-switch button { padding: 7px 10px; } }
+    #deck { display: none; position: fixed; inset: 0; z-index: 40; background: #fff; color: var(--ink); }
+    body.present { overflow: hidden; }
+    body.present #deck { display: block; }
+    .progress { position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--accent-soft); }
+    .progress i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+    .slide { display: none; position: absolute; inset: 0; padding: 70px clamp(24px, 8vw, 120px) 96px; overflow-y: auto; flex-direction: column; justify-content: center; }
+    .slide.on { display: flex; }
+    .s-tag { margin: 0 0 12px; color: var(--accent); font-size: clamp(13px, 1.5vw, 17px); font-weight: 750; letter-spacing: .1em; }
+    .s-title { margin: 0 0 clamp(18px, 3vh, 34px); font-size: clamp(28px, 4.2vw, 54px); line-height: 1.25; letter-spacing: -.01em; }
+    .s-body { font-size: clamp(18px, 2.4vw, 31px); line-height: 1.55; }
+    .s-body ul { margin: 0; padding-left: 1.1em; }
+    .s-body li { margin: .45em 0; }
+    .s-body .big { margin: 0; font-size: clamp(22px, 3vw, 38px); line-height: 1.5; }
+    .s-body .self { margin-top: 1.2em; padding: 14px 18px; background: var(--soft); border-radius: 12px; font-size: .8em; color: #526168; }
+    .chips { display: flex; flex-wrap: wrap; gap: 12px; }
+    .chips span { padding: 8px 18px; background: var(--accent-soft); color: var(--accent); border-radius: 999px; font-weight: 650; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .card { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; background: var(--soft); border: 1px solid var(--line); border-radius: 14px; }
+    .card b { color: var(--accent); font-size: 1.15em; }
+    .card span { font-size: .85em; line-height: 1.45; }
+    .flow { display: flex; flex-wrap: wrap; gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: st; }
+    .flow li { counter-increment: st; flex: 1 1 150px; margin: 0; padding: 16px 16px 16px 18px; background: var(--soft); border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 12px; font-size: .75em; line-height: 1.4; }
+    .flow li::before { content: "Stage " counter(st); display: block; margin-bottom: 6px; color: var(--accent); font-size: .75em; font-weight: 750; }
+    .title-slide .s-main { margin: 0 0 14px; font-size: clamp(30px, 5vw, 62px); line-height: 1.2; }
+    .title-slide .s-sub { margin: 0; font-size: clamp(18px, 2.6vw, 32px); color: #526168; }
+    .title-slide .s-zh { margin: 10px 0 0; font-size: clamp(16px, 2vw, 24px); color: var(--accent); font-weight: 650; }
+    .title-slide .s-meta { margin-top: clamp(24px, 6vh, 56px); color: var(--muted); font-size: clamp(14px, 1.7vw, 20px); }
+    .s-imgs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: clamp(18px, 3vh, 32px); }
+    .s-imgs button, .s-imgs a { display: inline-flex; align-items: center; padding: 10px 18px; border: 1px solid var(--accent); border-radius: 10px; background: #fff; color: var(--accent); font: inherit; font-size: 16px; font-weight: 650; text-decoration: none; cursor: pointer; touch-action: manipulation; }
+    .s-imgs button.primary { background: var(--accent); color: #fff; }
+    .s-imgs button:hover, .s-imgs a:hover { background: var(--accent-soft); }
+    .s-imgs button.primary:hover { background: #3b6a6f; }
+    .deck-bar { position: absolute; inset: auto 0 0 0; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 14px; background: linear-gradient(to top, #fff 70%, rgba(255,255,255,0)); }
+    .deck-bar button { min-width: 44px; height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font: inherit; font-size: 16px; cursor: pointer; touch-action: manipulation; }
+    .deck-bar button:hover { background: var(--accent-soft); border-color: var(--accent); }
+    .deck-bar button:disabled { opacity: .35; cursor: default; }
+    .deck-bar .count { min-width: 64px; text-align: center; color: var(--muted); font-size: 14px; }
+    .preview { display: none; position: absolute; inset: 56px 4vw 72px; z-index: 5; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 14px 50px rgba(25,45,50,.2); overflow: hidden; }
+    .preview.open { display: flex; }
+    .preview header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 14px; font-weight: 650; }
+    .preview header div { display: flex; gap: 8px; }
+    .preview header a, .preview header button { padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--accent); font: inherit; font-size: 13px; cursor: pointer; text-decoration: none; }
+    .preview iframe { flex: 1; width: 100%; border: 0; }
+    .preview .hint { margin: 0; padding: 8px 14px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); }
+  </style>
+</head>
+<body>
+  <div class="mobile-bar">
+    <button class="menu-button" id="menuButton" type="button" aria-expanded="false">☰ 目錄</button>
+    <span class="mobile-title">The Critical Form for Reading Papers</span>
+  </div>
+  <div class="overlay" id="overlay"></div>
+  <div class="mode-switch" role="group" aria-label="切換模式">
+    <button type="button" id="modeRead" aria-pressed="true">📄 閱讀版</button>
+    <button type="button" id="modePresent" aria-pressed="false">🎞 簡報版</button>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <p class="site-name">The Critical Form for Reading Papers</p>
+      <p class="site-note">學術文章閱讀與分析</p>
+      <p class="toc-label">CONTENT</p>
+      <nav class="toc" aria-label="文章分析目錄">
+        <button type="button" class="toc-link active" data-target="article-info"><span class="toc-num">00｜</span><span class="toc-text">Structure</span></button>
+        <button type="button" class="toc-link" data-target="scope"><span class="toc-num">01｜</span><span class="toc-text">Scope of Research and Major Background</span></button>
+        <button type="button" class="toc-link" data-target="purpose"><span class="toc-num">02｜</span><span class="toc-text">Research Problem(s) and Objectives</span></button>
+        <button type="button" class="toc-link" data-target="method"><span class="toc-num">03｜</span><span class="toc-text">Methodology and Steps</span></button>
+        <button type="button" class="toc-link" data-target="findings"><span class="toc-num">04｜</span><span class="toc-text">Findings and related Supports</span></button>
+        <button type="button" class="toc-link" data-target="significance"><span class="toc-num">05｜</span><span class="toc-text">Significance and Learnings</span></button>
+        <button type="button" class="toc-link" data-target="questions"><span class="toc-num">06｜</span><span class="toc-text">Questions?</span></button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="article-banner" id="article-info">
+        <p class="eyebrow">ARTICLE INFORMATION</p>
+        <h1>Finding Important Interdependent Product Features: A Simultaneous Consideration of Price and Quality Features</h1>
+        <p class="subtitle">找出產品特徵的相互依賴性：同時考量價格和品質特徵</p>
+        <div class="article-meta">
+          <span>作者：Sangkil Moon, Eunhee (Emily) Ko, Jong Min Kim, Keeyeon Ki-cheon Park</span>
+          <span>年份：2026</span>
+          <span>期刊／來源：《Journal of Interactive Marketing》（Advance online publication）</span>
+          <span>分析者：M11510910 邱勻姿</span>
+        </div>
+        <ul class="authors">
+          <li><strong>Sangkil Moon</strong>：現任美國北卡羅來納大學夏洛特分校（University of North Carolina at Charlotte）貝爾克商學院（Belk College of Business）Cullen 講座行銷學教授。</li>
+          <li><strong>Eunhee (Emily) Ko</strong>：現任美國佩斯大學（Pace University）魯賓商學院（Lubin School of Business）行銷學助理教授。</li>
+          <li><strong>Jong Min Kim</strong>：現任大韓民國首爾建國大學（Konkuk University）社會科學學院國際貿易學助理教授。</li>
+          <li><strong>Keeyeon Ki-cheon Park</strong>：現任大韓民國公州國立公州大學（Kongju National University）教育學院助理教授。</li>
+        </ul>
+
+        <div class="ref-card" id="refCard">
+          <div class="ref-head">
+            <span class="ref-label">REFERENCE<small>APA 7</small></span>
+            <button class="copy-btn" id="copyRef" type="button" aria-live="polite">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <span id="copyLabel">複製</span>
+            </button>
+          </div>
+          <p class="ref-text" id="refText">Moon, S., Ko, E., Kim, J. M., &amp; Park, K. K. (2026). Finding important interdependent product features: A simultaneous consideration of price and quality features. <i>Journal of Interactive Marketing</i>. Advance online publication. https://doi.org/10.1177/10949968261478847</p>
+          <p class="ref-hint">斜體為期刊名；本篇為線上預先出版（Advance online publication），尚無卷期與頁碼。</p>
+        </div>
+
+        <div class="outline">
+          <strong>00 Structure</strong>
+          <div class="table-scroll">
+            <table class="outline-table">
+              <thead><tr><th>標題名稱</th><th>圖表（點選跳至 Findings）</th><th>筆記</th></tr></thead>
+              <tbody>
+                <tr class="lv1"><td>摘要 Abstract</td><td class="fig"></td><td></td></tr>
+<tr class="lv1"><td>1. Introduction</td><td class="fig"></td><td>介紹產品特徵優先順序排列對產品經理的重要性，提出電商評論中「數據高度缺失」與「忽略特徵相互依賴性」兩大核心挑戰，並概述本研究結合缺失值填補與特徵工程的貢獻與研究架構。</td></tr>
+<tr class="lv1"><td>2. Conceptual Background and Literature Review</td><td class="fig"><span><button type="button" class="jump" data-target="row-w1">Table W1</button></span></td><td></td></tr>
+<tr class="lv2"><td>2.1 Product Feature Importance in E-Commerce Product Evaluation</td><td class="fig"></td><td>品質感知與產品特徵對消費者決策的影響，並討論線上評論因評論者選擇性提及而導致的特徵評分缺失問題。</td></tr>
+<tr class="lv2"><td>2.2 Product Feature Dependencies in E-Commerce Product Evaluation</td><td class="fig"><span><button type="button" class="jump" data-target="row-w1">Table W1</button></span></td><td>特徵依賴性的三種類型（互補、替代、條件），說明消費者如何同時衡量品質與價格，並比較傳統統計與最新機器學習／大語言模型在特徵分析上的優缺點與本研究定位。</td></tr>
+<tr class="lv2"><td>2.3 Missing Value Imputation</td><td class="fig"></td><td>分類說明缺失值機制（MCAR, MAR, MNAR）以及常見填補方法（簡單填補、迴歸填補、KNN、機器學習填補如 CART、LASSO、Random Forest 等）的原理與適用性。<br><button type="button" class="jump" data-target="gloss-missing">→ 名詞解釋：missing value</button></td></tr>
+<tr class="lv2"><td>2.4 Feature Engineering</td><td class="fig"></td><td>特徵工程如何透過領域知識與演算法將原始資料轉換為具預測力的變數（包含建構交互作用項），並解決高維度資料帶來的多重共線性與維度災難問題。<br><button type="button" class="jump" data-target="gloss-fe">→ 名詞解釋：Feature Engineering</button></td></tr>
+<tr class="lv1"><td>3. A New Product Feature Prioritization Procedure for E-commerce Products</td><td class="fig"><span><button type="button" class="jump" data-target="row-fig1">Figure 1</button></span></td><td>實驗流程 5 stage　<button type="button" class="jump" data-target="steps-5stage">→ 前往 5 stage</button></td></tr>
+<tr class="lv1"><td>4. Empirical Applications to Four Product Categories</td><td class="fig"></td><td></td></tr>
+<tr class="lv2"><td>4.1 Survey on the Importance of Product Feature Dependencies</td><td class="fig"></td><td>491 位實務管理者進行的調查結果，證實管理者極度看重了解單一特徵與多特徵組合對產品管理的價值。</td></tr>
+<tr class="lv2"><td>4.2 Data: Four Product Categories of Hotels, Restaurants, Moisturizers, and Tablets</td><td class="fig"><span><button type="button" class="jump" data-target="row-t1">Table 1</button></span><span><button type="button" class="jump" data-target="row-w1">Table W1</button></span></td><td>說明本實驗資料來源與使用方式。</td></tr>
+<tr class="lv2"><td>4.3 The Hotel Product Category</td><td class="fig"><span><button type="button" class="jump" data-target="row-t2">Table 2</button></span><span><button type="button" class="jump" data-target="app-b">Table W4</button></span></td><td>利用 missing 0%、5%、10% 驗證：缺失值填補後，再用 random forest algorithm 計算權重，三者結果高度重合，顯示其內部效度。</td></tr>
+<tr class="lv2"><td>4.4 The Restaurant Product Category</td><td class="fig"><span><button type="button" class="jump" data-target="row-t34">Table 3</button></span><span><button type="button" class="jump" data-target="row-t34">Table 4</button></span><span><button type="button" class="jump" data-target="app-b">Table W4</button></span></td><td>使用 CART 填補缺失值；Neural Network 建構特徵組合；市場細分（Cluster Analysis）呈現不一樣的特徵偏好。</td></tr>
+<tr class="lv2"><td>4.5 The Moisturizer Product Category 保濕霜</td><td class="fig"><span><button type="button" class="jump" data-target="row-t5">Table 5</button></span><span><button type="button" class="jump" data-target="app-b">Table W11</button></span></td><td>使用 LASSO 填補；Random Forest 建構特徵組合。</td></tr>
+<tr class="lv2"><td>4.6 The Tablet Product Category 平板電腦</td><td class="fig"><span><button type="button" class="jump" data-target="row-t6">Table 6</button></span></td><td>LASSO 填補；Random Forest 建構特徵組合。</td></tr>
+<tr class="lv2"><td>4.7 Summary of the Results from the Four Product Categories</td><td class="fig"><span><button type="button" class="jump" data-target="row-t7">Table 7</button></span></td><td>跨類別共通發現有二點。</td></tr>
+<tr class="lv1"><td>5. Discussion</td><td class="fig"></td><td></td></tr>
+<tr class="lv2"><td>5.1 Theoretical Implications 理論啟示</td><td class="fig"><span><button type="button" class="jump" data-target="row-w1">Table W1</button></span></td><td>特徵相互依賴性。　<button type="button" class="jump" data-target="row-51">→ 詳見 Findings</button></td></tr>
+<tr class="lv2"><td>5.2 Managerial Implications 管理啟示</td><td class="fig"></td><td>特徵組合的特性對後續產品升級的啟示；safe zone；平台收集回饋時的改版建議。　<button type="button" class="jump" data-target="row-52">→ 詳見 Findings</button></td></tr>
+<tr class="lv2"><td>5.3 Limitations and Future Research Avenues 限制與未來研究方向</td><td class="fig"></td><td>消費者的評論缺失非隨機且可能有從眾效應；將類別擴展以檢驗此模型的準確度；多模態資料（文字、圖片）的評論納入評分的計算。　<button type="button" class="jump" data-target="row-53">→ 詳見 Findings</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="outline">
+          <strong>00 Web Appendix</strong>
+          <div class="table-scroll">
+            <table class="outline-table">
+              <thead><tr><th>標題名稱</th><th>圖表</th><th>筆記</th></tr></thead>
+              <tbody>
+                <tr class="lv1" id="app-a"><td>A. Literature Comparison and Methodological Detail 文獻比較與方法論細節</td><td class="fig"><span><button type="button" class="jump" data-target="row-w1">Table W1</button></span></td><td>本篇論文與過去 40 年間（1981 年至 2022 年）行銷與資料科學領域的 15 篇重要文獻進行方法論上的橫向對比，用以凸顯本研究的學術創新性與獨特貢獻。</td></tr>
+<tr class="lv1" id="app-b"><td>B. Data, Survey, and Empirical Results 資料、問卷調查與實證結果</td><td class="fig"><span>Table W2~15</span><span>Figure W1~3</span></td><td><ul class="cell-list"><li>管理者實務需求調查（Table W2）</li><li>四大產品類別的實證數據與演算法檢定（Table W3～W15）：Hotels W3～6；Restaurants W7～9；Moisturizers W10～12；Tablets W13～15 → 作用於 <button type="button" class="jump" data-target="steps-5stage">Stage 2</button> 篩選</li><li>電商介面截圖與偏好地圖（Figure W1～W3）</li></ul></td></tr>
+<tr class="lv1" id="app-c"><td>C. Robustness Checks 穩健性檢定</td><td class="fig"><span>Table W16~19</span></td><td><ul class="cell-list"><li>原始變數 vs. 標準化變數（Table W16 &amp; W17）<span class="orange">→ 數值縮放不影響結論</span></li><li>填補時「有無包含整體評分」（Table W18 &amp; W19）<span class="orange">→ 整體評分是填補關鍵</span></li></ul></td></tr>
+<tr class="lv1" id="app-d"><td>D. Conceptual Positioning and Model Comparison 概念定位與模型比較</td><td class="fig"><span>Table W20~21</span></td><td>單靠 LLM 或文字探勘抓關鍵字是不夠的；兼具最高解釋力與實務可操作性（Table W20～W21）。</td></tr>
+<tr class="lv1" id="app-e"><td>E. Managerial Protocol and Implementation 管理執行準則與實務落地</td><td class="fig"><span>Figure W4</span><span>Table W22~24</span></td><td><ul class="cell-list"><li>管理者決策流程圖（Figure W4）</li><li>四大產品類別特徵組合怎麼用（Table W22）</li><li>Safe Zone（Table W23～W24）</li></ul></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </header>
+
+      <div class="analysis-grid">
+        <section class="analysis-card" id="scope">
+          <div class="card-heading"><span class="number">01</span><h2>Scope of Research and Major Background</h2></div>
+          <h3>Scope</h3>
+          <p>product features；feature prioritization（優先順序）；feature interdependency；price-quality perception（見解）；missing value imputation（缺失值填補）；feature engineering（特徵工程）</p>
+          <h3>Background</h3>
+          <ul>
+            <li><strong>實務背景：</strong>電商大數據下的「產品特徵優先順序」與「資料高度缺失」</li>
+            <li><strong>學術缺口：</strong>傳統問卷與最新 NLP / LLM 模型的局限</li>
+          </ul>
+        </section>
+
+        <section class="analysis-card" id="purpose">
+          <div class="card-heading"><span class="number">02</span><h2>Research Problem(s) and Objectives</h2></div>
+          <h3>Research Problem(s)</h3>
+          <p>(1) missing feature information and (2) feature dependencies</p>
+          <h3>Purpose</h3>
+          <p>提出一套「The Feature Prioritization Model」特徵優先順序模型，以供產品經理人能找到有商業價值的「特徵組合」。</p>
+          <h3>Objectives</h3>
+          <ul class="obj-list">
+            <li><strong>解決高缺失率資料的填補與多重共線性問題</strong>實證顯示 LASSO 與 CART 能在面對高度缺失（60–90%）的資料時提供最精準的填補效果；而 Random Forest 與 Neural Network 則能有效處理多維度交互作用項，並顯著降低嚴重多重共線性對估計的干擾。</li>
+            <li><strong>驗證「特徵組合（Feature Mixes）」對產品評估的重要性</strong>四大產品類別（飯店、餐廳、保濕霜、平板電腦）的分析結果一致顯示，2 向與 3 向特徵組合皆佔高權重。</li>
+            <li><strong>揭示品質特徵與價格／物有所值（Price/Value）的同時交互影響</strong>四大類別結果證實，消費者是在 <span class="gray">Price × Value</span> 限定預算下衡量價格與品質特徵的動態平衡。</li>
+          </ul>
+        </section>
+
+        <section class="analysis-card wide" id="method">
+          <div class="card-heading"><span class="number">03</span><h2>Methodology and Steps</h2></div>
+          <div class="two-col">
+            <div>
+              <h3>Methodology</h3>
+              <p>Regression Models 回歸模型、Machine Learning/AI（CNN, RNN, LSM, SVM, etc.）</p>
+            </div>
+            <div>
+              <h3 id="steps-5stage">Steps：5 stage</h3>
+              <ol>
+                <li>web scraping online reviews</li>
+                <li>篩選後建構 Product × Feature 矩陣（<button type="button" class="jump" data-target="app-b">Web Appendix B</button>）</li>
+                <li>missing value imputation 缺失值填補　<button type="button" class="jump" data-target="gloss-missing">→ 名詞解釋</button></li>
+                <li>建構 Feature engineering　<button type="button" class="jump" data-target="gloss-fe">→ 名詞解釋</button></li>
+                <li>解讀結果</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <section class="analysis-card wide" id="findings">
+          <div class="card-heading"><span class="number">04</span><h2>Findings and related Supports</h2></div>
+          <div class="gloss">
+            <h3 id="gloss-missing">missing value（名詞解釋）</h3>
+            <p>通常只會針對自己在意的 1 到 3 個功能發表意見，不會把商品的 20 個功能全部評論一遍；而沒填的欄位如果以 0 代表，意思是極度不喜歡，會扭曲研究結果。</p>
+            <h3 id="gloss-fe">Feature Engineering（名詞解釋）</h3>
+            <p>特徵工程，找出重要的單一特徵或特徵的相互依賴關係，以解釋產品的評分。利用此特徵工程能測出 one way 與 three way 之間的差別，不只是因為數量多，更因為它捕捉到了 1-way 完全無法解釋的「化學反應」。</p>
+          </div>
+
+          <h3>圖表與資料佐證</h3>
+          <p class="placeholder">圖片存放於雲端硬碟，點選「開啟圖片 ↗」會在新分頁開啟（需有該資料夾的檢視權限）。</p>
+          <div class="table-scroll">
+            <table class="res-table">
+              <thead><tr><th>圖表</th><th>說明</th><th>原圖連結</th></tr></thead>
+              <tbody>
+                <tr id="row-fig1"><td class="fig-name">Figure 1</td><td>5 stage（實驗流程）　<button type="button" class="jump" data-target="steps-5stage">→ 對照 Steps</button></td><td class="fig-link"><a class="ext" href="https://drive.google.com/file/d/1JBkIh5l0fDzTXD_goEwwpGHleGun709a/view?usp=sharing" target="_blank" rel="noopener noreferrer">開啟圖片 ↗</a></td></tr>
+<tr id="row-w1"><td class="fig-name">Table W1</td><td>文獻探討本研究之重要性</td><td class="fig-link"><a class="ext" href="https://drive.google.com/file/d/1-QITyDwSTv65WylWnyiXcEsyhRM-I3Ql/view?usp=sharing" target="_blank" rel="noopener noreferrer">開啟圖片 ↗</a></td></tr>
+<tr id="row-t1"><td class="fig-name">Table 1<br>四類別</td><td>本實驗資料的效度與誤差總表（service×2 + physical×2）：資料來源、特性、外部效度（推廣到「實驗環境以外」的真實世界）、內部效度（抽樣具有代表性）、建構效度驗證</td><td class="fig-link"><a class="ext" href="https://drive.google.com/file/d/1W2rJzIj2pSkkeOjkBfVWN21ixbNDzNiO/view?usp=sharing" target="_blank" rel="noopener noreferrer">開啟圖片 ↗</a></td></tr>
+<tr id="row-t2"><td class="fig-name">Table 2<br>Hotels</td><td><ul class="cell-list"><li>為了測試內部效度，random forest algorithm 在 0%、5%、10% missing 的情況下的權重計算結果，有高度重合。</li><li><strong>Stage 3（缺失值填補）</strong>LASSO 填補 sample 5%；PMM 填補 10%</li><li><strong>Stage 4（特徵工程）</strong>Random Forest「負責計算特徵重要性權重」（評估單一特徵與多向特徵組合，如 location × service × sleep，對整體評分的影響力，並計算出 Table 2 看到的重要性數值）</li></ul></td><td class="fig-link"><a class="ext" href="https://drive.google.com/file/d/1U_ZFULXxBb5NGXfIx95Y9-Pm5E_3ypmx/view?usp=sharing" target="_blank" rel="noopener noreferrer">開啟圖片 ↗</a></td></tr>
+<tr id="row-t34"><td class="fig-name">Table 3<br>Table 4<br>Restaurants</td><td><ul class="cell-list"><li><strong>Stage 3（缺失值填補）</strong>CART 填補</li><li><strong>Stage 4（特徵工程）</strong>Neural Network：value × service × food → 調漲菜單價格（改變 Value）時，必須同步提升服務速度與品質</li><li>市場細分（Cluster Analysis）：不一樣的特徵偏好 → 可能提供產品經理「差異化」的商品開發</li></ul></td><td class="fig-link"><a class="ext" href="https://drive.google.com/file/d/12ny4o8jDIllWJAcaj23j3q2v-R8gHRJp/view?usp=sharing" target="_blank" rel="noopener noreferrer">Table 3 ↗</a><a class="ext" href="https://drive.google.com/file/d/1N6U4T2ry5Yz_HRW67uW4lBEbgkx6f565/view?usp=sharing" target="_blank" rel="noopener noreferrer">Table 4 ↗</a></td></tr>
+<tr id="row-t5"><td class="fig-name">Table 5<br>Moisturizers</td><td><ul class="cell-list"><li><strong>Stage 3（缺失值填補）</strong>LASSO 填補</li><li><strong>Stage 4（特徵工程）</strong>Random Forest</li><li>說明 <span class="gray">moisture × value × scent [+]</span> 的高權重</li></ul></td><td class="fig-link"><a class="ext" href="https://drive.google.com/file/d/1v953mrPz75IRAWPZ-qj02Bc6Y-lZhLxq/view?usp=sharing" target="_blank" rel="noopener noreferrer">開啟圖片 ↗</a></td></tr>
+<tr id="row-t6"><td class="fig-name">Table 6<br>Tablets</td><td><ul class="cell-list"><li><strong>Stage 3（缺失值填補）</strong>LASSO 填補</li><li><strong>Stage 4（特徵工程）</strong>Random Forest</li><li>說明 <span class="gray">touch × quality</span> 的高權重</li></ul></td><td class="fig-link"><a class="ext" href="https://drive.google.com/file/d/1FZr2CCrtoX4D-unYb9BYbBR1LFHazbq5/view?usp=sharing" target="_blank" rel="noopener noreferrer">開啟圖片 ↗</a></td></tr>
+<tr id="row-t7"><td class="fig-name">Table 7</td><td>特徵組合的重要性：price/value + quality 組合，且 <span class="gray">price/value × quality</span> 的組合</td><td class="fig-link"><a class="ext" href="https://drive.google.com/file/d/17akIVDl0wGKwokrXWyy7JpIIPfyYjqWn/view?usp=sharing" target="_blank" rel="noopener noreferrer">開啟圖片 ↗</a></td></tr>
+<tr id="row-51"><td class="fig-name">5.1 Theoretical Implications 理論啟示</td><td><ul class="cell-list"><li><strong>特徵相互依賴性（Feature Interdependence）：</strong>明確證明消費者在評估電商產品時是「同時考量多個特徵（2-way 與 3-way 綜效）」。</li><li><strong>自然主義聯合分析（Naturalistic Conjoint Analysis）：</strong>消費者選擇性給予評分所造成的「數據缺失」，重新定義為反映消費者心理顯著性（Salience）的訊號。</li><li><strong>結合「缺失值填補」與「特徵工程」：</strong>能有效解決電商大數據高達 60%～90% 缺失率，以及特徵組合交互作用下所引發的多重共線性問題。</li><li>Value/Price 會與感官或功能品質特徵產生強烈的交互作用，為產品設計與定價提供可檢定的理論假說。</li></ul></td><td class="fig-link"><span class="none">—</span></td></tr>
+<tr id="row-52"><td class="fig-name">5.2 Managerial Implications 管理啟示</td><td><ul class="cell-list"><li>特徵組合的特性可以避免進行無效的孤立升級。</li><li><strong>safe zone 實務門檻建議：</strong>「矩陣至少 30% 以上有評分資料，且產品樣本數 N &gt; 200」。</li><li><strong>平台介面改版建議：</strong>「自適應觸發問卷（Adaptive Review Interface Design）」——建議 TripAdvisor 或 Amazon 等平台改採「綜效導向抽樣」：當消費者主動給予 Feature A（如清潔度）評分時，系統動態彈出提示（Nudge）邀請填寫相連的 Feature B（如服務），以降低數據缺失。</li></ul></td><td class="fig-link"><span class="none">—</span></td></tr>
+<tr id="row-53"><td class="fig-name">5.3 Limitations and Future Research Avenues</td><td><ul class="cell-list"><li><strong>使用者生成內容（UGC）的選擇性偏差（Selection Bias）：</strong>消費者通常只評論記憶點極深或表現極端的特徵，導致資料存在非隨機的選擇偏差，且容易受到前人評論的從眾效應（Herding Effect）影響。</li><li><strong>演算法與類別擴展：</strong>未來研究應測試更廣泛的機器學習演算法與產品類別，以檢驗演算法的敏感度。</li><li><strong>跨入多模態資料（Multimodal Data）：</strong>將研究框架擴充至包含文字與圖片（Text &amp; Images）的多模態評論數據，以擷取更豐富的訊號進行數據填補與特徵組合挖掘。</li></ul></td><td class="fig-link"><span class="none">—</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="analysis-card" id="significance">
+          <div class="card-heading"><span class="number">05</span><h2>Significance and Learnings</h2></div>
+          <h3>在資源有限的情況之下，找出必要的商業策略，是公司著重的。</h3>
+          <h3>文獻探討的方式</h3>
+          <p>明確指出各文獻之優缺與貢獻，使用表格呈現能清楚指出 Gap。</p>
+        </section>
+
+        <section class="analysis-card" id="questions">
+          <div class="card-heading"><span class="number">06</span><h2>Questions?</h2></div>
+          <h3>Q1</h3>
+          <p>填補缺失值與演算法的繁複程度，是否只是將高頻出現的特徵一起呈現呢？（消費者在選購商品時，品質與價錢會一起評估，此研究能數據化的指出，但其產生的效益是否適合讓產品經理人選擇使用）</p>
+          <p class="note"><strong>自問自答：</strong>🤔 文獻中提出的產品種類是 hotel, restaurant, moisturizer, tablet，如果能將本文的流程用在還在開發階段（或尚未成熟）的產品，是否更能發揮巨大效益。</p>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="deck" aria-label="簡報版">
+    <div class="progress"><i id="progressBar"></i></div>
+    <section class="slide title-slide">
+      <p class="s-tag">Quantitative Design Studies ｜ The Critical Form for Reading Papers</p>
+      <h1 class="s-main">Finding Important Interdependent Product Features</h1>
+      <p class="s-sub">A Simultaneous Consideration of Price and Quality Features</p>
+      <p class="s-zh">找出產品特徵的相互依賴性：同時考量價格和品質特徵</p>
+      <p class="s-meta">Moon, Ko, Kim &amp; Park (2026) ・ <i>Journal of Interactive Marketing</i><br>分析者：M11510910 邱勻姿</p>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">00 · Structure</p>
+      <h2 class="s-title">文章架構</h2>
+      <div class="s-body"><div class="cards"><div class="card"><b>1–2</b><span>問題與文獻：缺失值、特徵相依</span></div><div class="card"><b>3</b><span>新方法：5 stage 流程</span></div><div class="card"><b>4</b><span>四大類別實證</span></div><div class="card"><b>5</b><span>討論與啟示</span></div></div></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">01 · Scope</p>
+      <h2 class="s-title">研究範圍</h2>
+      <div class="s-body"><div class="chips"><span>product features</span><span>feature prioritization 優先順序</span><span>feature interdependency</span><span>price-quality perception</span><span>missing value imputation 缺失值填補</span><span>feature engineering 特徵工程</span></div></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">01 · Background</p>
+      <h2 class="s-title">研究背景</h2>
+      <div class="s-body"><ul><li><b>實務：</b>電商大數據下，如何排「產品特徵優先順序」，但資料高度缺失</li><li><b>學術缺口：</b>傳統問卷與最新 NLP / LLM 模型都有局限</li></ul></div>
+    </section>
+    <section class="slide " data-imgs="1-QITyDwSTv65WylWnyiXcEsyhRM-I3Ql|Table W1">
+      <p class="s-tag">01 · Background</p>
+      <h2 class="s-title">文獻比較：這篇補了什麼缺口？</h2>
+      <div class="s-body"><ul><li>與 1981–2022 年間 15 篇文獻做橫向比較</li><li>用表格清楚呈現 Gap</li></ul></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">02 · Research Problems</p>
+      <h2 class="s-title">兩個核心問題</h2>
+      <div class="s-body"><div class="cards"><div class="card"><b>1</b><span>Missing feature information<br>特徵資訊缺失</span></div><div class="card"><b>2</b><span>Feature dependencies<br>特徵相互依賴</span></div></div></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">02 · Purpose</p>
+      <h2 class="s-title">研究目的</h2>
+      <div class="s-body"><p class="big">提出「The Feature Prioritization Model」，讓產品經理人找到有商業價值的<b>特徵組合</b></p></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">02 · Objectives</p>
+      <h2 class="s-title">三個研究目標</h2>
+      <div class="s-body"><div class="cards"><div class="card"><b>1</b><span>解決高缺失率的填補與多重共線性</span></div><div class="card"><b>2</b><span>驗證「特徵組合」對產品評估很重要</span></div><div class="card"><b>3</b><span>揭示品質與價格／價值的同時交互影響</span></div></div></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">03 · Methodology</p>
+      <h2 class="s-title">研究方法</h2>
+      <div class="s-body"><ul><li>Regression Models 回歸模型</li><li>Machine Learning / AI（CNN, RNN, LSM, SVM…）</li><li>資料：電商線上評論（四大產品類別）</li></ul></div>
+    </section>
+    <section class="slide " data-imgs="1JBkIh5l0fDzTXD_goEwwpGHleGun709a|Figure 1">
+      <p class="s-tag">03 · Steps</p>
+      <h2 class="s-title">5 stage 流程</h2>
+      <div class="s-body"><ol class="flow"><li>web scraping<br>online reviews</li><li>建構<br>Product × Feature 矩陣</li><li>missing value<br>imputation</li><li>feature<br>engineering</li><li>解讀結果</li></ol></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">Glossary</p>
+      <h2 class="s-title">missing value 缺失值</h2>
+      <div class="s-body"><ul><li>評論者只會評 1–3 個在意的功能，不會評完 20 個</li><li>空白若填 0 ＝ 極度不喜歡 → <b>扭曲結果</b></li><li>因此需要「填補」而非補 0</li></ul></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">Glossary</p>
+      <h2 class="s-title">Feature Engineering 特徵工程</h2>
+      <div class="s-body"><ul><li>找出重要的<b>單一特徵</b>與<b>特徵之間的依賴關係</b></li><li>one-way vs. three-way 的差別，不只是數量</li><li>three-way 捕捉到 1-way 解釋不了的「化學反應」</li></ul></div>
+    </section>
+    <section class="slide " data-imgs="1W2rJzIj2pSkkeOjkBfVWN21ixbNDzNiO|Table 1">
+      <p class="s-tag">04 · Findings</p>
+      <h2 class="s-title">Table 1　資料的效度與誤差</h2>
+      <div class="s-body"><ul><li>四類別：service × 2 ＋ physical × 2</li><li>說明資料來源、外部效度、內部效度、建構效度</li></ul></div>
+    </section>
+    <section class="slide " data-imgs="1U_ZFULXxBb5NGXfIx95Y9-Pm5E_3ypmx|Table 2">
+      <p class="s-tag">04 · Hotels</p>
+      <h2 class="s-title">Hotels（Table 2）</h2>
+      <div class="s-body"><ul><li>0% / 5% / 10% missing 下，權重結果<b>高度重合</b> → 內部效度</li><li>Stage 3：LASSO（5%）、PMM（10%）</li><li>Stage 4：Random Forest 算特徵權重</li></ul></div>
+    </section>
+    <section class="slide " data-imgs="12ny4o8jDIllWJAcaj23j3q2v-R8gHRJp|Table 3;1N6U4T2ry5Yz_HRW67uW4lBEbgkx6f565|Table 4">
+      <p class="s-tag">04 · Restaurants</p>
+      <h2 class="s-title">Restaurants（Table 3, 4）</h2>
+      <div class="s-body"><ul><li>Stage 3：CART　Stage 4：Neural Network</li><li>value × service × food：調漲價格要同步提升服務與品質</li><li>Cluster Analysis：不同族群偏好不同 → 差異化產品</li></ul></div>
+    </section>
+    <section class="slide " data-imgs="1v953mrPz75IRAWPZ-qj02Bc6Y-lZhLxq|Table 5">
+      <p class="s-tag">04 · Moisturizers</p>
+      <h2 class="s-title">Moisturizers（Table 5）</h2>
+      <div class="s-body"><ul><li>Stage 3：LASSO　Stage 4：Random Forest</li><li><span class="gray">moisture × value × scent [+]</span> 權重高</li></ul></div>
+    </section>
+    <section class="slide " data-imgs="1FZr2CCrtoX4D-unYb9BYbBR1LFHazbq5|Table 6">
+      <p class="s-tag">04 · Tablets</p>
+      <h2 class="s-title">Tablets（Table 6）</h2>
+      <div class="s-body"><ul><li>Stage 3：LASSO　Stage 4：Random Forest</li><li><span class="gray">touch × quality</span> 權重高</li></ul></div>
+    </section>
+    <section class="slide " data-imgs="17akIVDl0wGKwokrXWyy7JpIIPfyYjqWn|Table 7">
+      <p class="s-tag">04 · Summary</p>
+      <h2 class="s-title">跨類別共同發現（Table 7）</h2>
+      <div class="s-body"><ul><li>price/value ＋ quality 的組合很重要</li><li><span class="gray">price/value × quality</span> 的交互組合也重要</li></ul></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">05 · Theoretical</p>
+      <h2 class="s-title">理論啟示</h2>
+      <div class="s-body"><ul><li><b>特徵相互依賴：</b>消費者同時考量多個特徵（2-way、3-way）</li><li><b>缺失＝訊號：</b>反映心理顯著性（Salience）</li><li><b>填補 ＋ 特徵工程：</b>解決 60–90% 缺失與多重共線性</li><li>Value/Price 與品質特徵強烈交互</li></ul></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">05 · Managerial</p>
+      <h2 class="s-title">管理啟示</h2>
+      <div class="s-body"><ul><li>避免無效的孤立升級</li><li><b>safe zone：</b>矩陣 ≥30% 有評分，且 N &gt; 200</li><li>平台改版：自適應觸發問卷（Nudge 引導填寫相連特徵）</li></ul></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">05 · Limitations</p>
+      <h2 class="s-title">限制與未來研究</h2>
+      <div class="s-body"><ul><li>UGC 的選擇性偏差與從眾效應</li><li>測試更多演算法與產品類別</li><li>納入多模態資料（文字＋圖片）</li></ul></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">05 · Learnings</p>
+      <h2 class="s-title">我的學習</h2>
+      <div class="s-body"><ul><li>資源有限時，找出必要的商業策略</li><li>文獻探討：表格比較，能清楚指出 Gap</li></ul></div>
+    </section>
+    <section class="slide ">
+      <p class="s-tag">06 · Questions?</p>
+      <h2 class="s-title">Q1</h2>
+      <div class="s-body"><p class="big">填補缺失值與演算法這麼繁複，是否只是把高頻出現的特徵放在一起？</p><p class="self">🤔 自問自答：若用在<b>尚在開發、未成熟的產品</b>，是否更能發揮效益？</p></div>
+    </section>
+    <div class="preview" id="preview">
+      <header><span id="previewTitle"></span><div><a id="previewOpen" href="#" target="_blank" rel="noopener noreferrer">新分頁開啟 ↗</a><button type="button" id="previewClose">關閉</button></div></header>
+      <iframe id="previewFrame" title="圖片預覽" loading="lazy" referrerpolicy="no-referrer"></iframe>
+      <p class="hint">預覽直接向雲端硬碟讀取，不會增加此檔案大小；若空白，請改用「新分頁開啟」。</p>
+    </div>
+    <div class="deck-bar">
+      <button type="button" id="prevSlide" aria-label="上一頁">←</button>
+      <span class="count" id="slideCount"></span>
+      <button type="button" id="nextSlide" aria-label="下一頁">→</button>
+      <button type="button" id="fsBtn" aria-label="全螢幕">⛶</button>
+    </div>
+  </div>
+
+  <script>
+    // 左側目錄是 <button data-target="區塊ID">，不使用 #網址跳轉，
+    // 所以在老師系統內不會觸發換頁／上一頁；捲動全由下方程式完成。
+    const tocLinks = [...document.querySelectorAll('.toc .toc-link')];
+    const sections = tocLinks
+      .map(link => document.getElementById(link.dataset.target))
+      .filter(Boolean);
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        tocLinks.forEach(link => {
+          link.classList.toggle(
+            'active',
+            link.dataset.target === entry.target.id
+          );
+        });
+      });
+    }, {
+      rootMargin: '-18% 0px -68% 0px',
+      threshold: 0
+    });
+
+    sections.forEach(section => observer.observe(section));
+
+    const menuButton = document.getElementById('menuButton');
+    const overlay = document.getElementById('overlay');
+
+    function closeMenu() {
+      document.body.classList.remove('menu-open');
+      if (menuButton) menuButton.setAttribute('aria-expanded', 'false');
+    }
+
+    if (menuButton) {
+      menuButton.addEventListener('click', () => {
+        const isOpen = document.body.classList.toggle('menu-open');
+        menuButton.setAttribute('aria-expanded', String(isOpen));
+      });
+    }
+    overlay.addEventListener('click', closeMenu);
+    // 目錄點擊：收起手機選單 → 捲到指定區塊（不改網址、不寫入瀏覽紀錄）
+    tocLinks.forEach(link => link.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const el = document.getElementById(link.dataset.target);
+      const wasOpen = document.body.classList.contains('menu-open');
+      closeMenu();
+      tocLinks.forEach(l => l.classList.toggle('active', l === link));
+      if (!el) return;
+      setTimeout(() => goTo(el), wasOpen ? 80 : 0);
+    }));
+
+    // 捲動：頁面自己能捲時，只捲自己（不連累外層的老師網頁）；
+    // 若頁面被嵌成「全高度、由外層捲動」，才退回 scrollIntoView。
+    function goTo(el) {
+      const se = document.scrollingElement || document.documentElement;
+      if (se.scrollHeight - window.innerHeight > 4) {
+        const root = getComputedStyle(document.documentElement);
+        const offset = (parseFloat(root.scrollPaddingTop) || 0) + (parseFloat(getComputedStyle(el).scrollMarginTop) || 0);
+        const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+      } else {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // REFERENCE 複製（保留斜體；不支援時退回純文字）
+    const copyBtn = document.getElementById('copyRef');
+    const copyLabel = document.getElementById('copyLabel');
+    const refText = document.getElementById('refText');
+
+    function legacyCopy() {
+      const range = document.createRange();
+      range.selectNodeContents(refText);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      const ok = document.execCommand('copy');
+      sel.removeAllRanges();
+      return ok;
+    }
+
+    async function copyReference() {
+      let ok = false;
+      try {
+        if (navigator.clipboard && window.ClipboardItem) {
+          const html = refText.innerHTML;
+          const text = refText.innerText.trim();
+          await navigator.clipboard.write([new ClipboardItem({
+            'text/html': new Blob([html], { type: 'text/html' }),
+            'text/plain': new Blob([text], { type: 'text/plain' })
+          })]);
+          ok = true;
+        }
+      } catch (e) { ok = false; }
+      if (!ok) { try { ok = legacyCopy(); } catch (e) { ok = false; } }
+      copyLabel.textContent = ok ? '已複製 ✓' : '請手動選取複製';
+      copyBtn.classList.toggle('copied', ok);
+      setTimeout(() => { copyLabel.textContent = '複製'; copyBtn.classList.remove('copied'); }, 2000);
+    }
+    copyBtn.addEventListener('click', copyReference);
+
+    // 頁內跳轉（Structure 的圖表／名詞解釋／Steps／Web Appendix）：同樣不改網址、不寫入瀏覽紀錄
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('.jump');
+      if (!b) return;
+      e.preventDefault();
+      const el = document.getElementById(b.dataset.target);
+      if (!el) return;
+      goTo(el);
+      el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+      setTimeout(() => el.classList.remove('flash'), 1900);
+    });
+
+    // ===== 閱讀版／簡報版切換 =====
+    const modeRead = document.getElementById('modeRead');
+    const modePresent = document.getElementById('modePresent');
+    const deckEl = document.getElementById('deck');
+    const slideEls = [...deckEl.querySelectorAll('.slide')];
+    const previewEl = document.getElementById('preview');
+    const previewFrame = document.getElementById('previewFrame');
+    let cur = 0;
+
+    function driveUrl(id, kind) { return 'https://drive.google.com/file/d/' + id + '/' + kind; }
+
+    // 圖片只放連結，不內嵌；按「預覽」時才向雲端硬碟載入
+    slideEls.forEach(sl => {
+      if (!sl.dataset.imgs) return;
+      const wrap = document.createElement('div');
+      wrap.className = 's-imgs';
+      sl.dataset.imgs.split(';').forEach((pair, i) => {
+        const [id, label] = pair.split('|');
+        const pv = document.createElement('button');
+        pv.type = 'button'; pv.className = 'primary'; pv.textContent = '🖼 ' + label + '（預覽）';
+        pv.addEventListener('click', () => openPreview(id, label));
+        const a = document.createElement('a');
+        a.href = driveUrl(id, 'view?usp=sharing'); a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.textContent = label + ' 新分頁 ↗';
+        wrap.append(pv, a);
+      });
+      sl.querySelector('.s-body').after(wrap);
+    });
+
+    function openPreview(id, label) {
+      document.getElementById('previewTitle').textContent = label;
+      document.getElementById('previewOpen').href = driveUrl(id, 'view?usp=sharing');
+      previewFrame.src = driveUrl(id, 'preview');
+      previewEl.classList.add('open');
+    }
+    function closePreview() {
+      previewEl.classList.remove('open');
+      previewFrame.removeAttribute('src');
+    }
+    document.getElementById('previewClose').addEventListener('click', closePreview);
+
+    function show(i) {
+      cur = Math.max(0, Math.min(slideEls.length - 1, i));
+      slideEls.forEach((s, k) => s.classList.toggle('on', k === cur));
+      closePreview();
+      slideEls[cur].scrollTop = 0;
+      document.getElementById('slideCount').textContent = (cur + 1) + ' / ' + slideEls.length;
+      document.getElementById('progressBar').style.width = ((cur + 1) / slideEls.length * 100) + '%';
+      document.getElementById('prevSlide').disabled = cur === 0;
+      document.getElementById('nextSlide').disabled = cur === slideEls.length - 1;
+    }
+
+    function setMode(present) {
+      document.body.classList.toggle('present', present);
+      modeRead.setAttribute('aria-pressed', String(!present));
+      modePresent.setAttribute('aria-pressed', String(present));
+      if (present) { closeMenu(); show(cur); }
+      else { closePreview(); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+    }
+    modeRead.addEventListener('click', () => setMode(false));
+    modePresent.addEventListener('click', () => setMode(true));
+    document.getElementById('prevSlide').addEventListener('click', () => show(cur - 1));
+    document.getElementById('nextSlide').addEventListener('click', () => show(cur + 1));
+    document.getElementById('fsBtn').addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      else (document.documentElement.requestFullscreen || (() => Promise.resolve())).call(document.documentElement).catch(() => {});
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!document.body.classList.contains('present')) return;
+      if (e.key === 'Escape' && previewEl.classList.contains('open')) { closePreview(); return; }
+      if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); show(cur + 1); }
+      else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(cur - 1); }
+      else if (e.key === 'Home') show(0);
+      else if (e.key === 'End') show(slideEls.length - 1);
+      else if (e.key === 'f' || e.key === 'F') document.getElementById('fsBtn').click();
+    });
+
+    // 觸控：左右滑動換頁
+    let tx = null;
+    deckEl.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+    deckEl.addEventListener('touchend', e => {
+      if (tx === null || previewEl.classList.contains('open')) { tx = null; return; }
+      const dx = e.changedTouches[0].clientX - tx; tx = null;
+      if (Math.abs(dx) > 60) show(cur + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+  </script>
+</body>
+</html>
